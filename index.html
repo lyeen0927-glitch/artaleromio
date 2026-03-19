@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>羅密歐與茱麗葉</title>
+<title>階梯組隊</title>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
@@ -153,12 +153,12 @@ input[type="text"]::placeholder { letter-spacing: 0; font-weight: 400; font-size
     <p>選數字，顏色即時同步給所有人</p>
   </div>
   <div class="card">
-    <h2>選擇玩家身份（點名稱可編輯）</h2>
+    <h2>選擇你的玩家身份</h2>
     <div class="player-grid" id="player-grid">
-      <button class="p-btn p1" onclick="pick(1)"><span class="p-num">P1</span><span class="p-name" id="lname1">玩家一</span></button>
-      <button class="p-btn p2" onclick="pick(2)"><span class="p-num">P2</span><span class="p-name" id="lname2">玩家二</span></button>
-      <button class="p-btn p3" onclick="pick(3)"><span class="p-num">P3</span><span class="p-name" id="lname3">玩家三</span></button>
-      <button class="p-btn p4" onclick="pick(4)"><span class="p-num">P4</span><span class="p-name" id="lname4">玩家四</span></button>
+      <button class="p-btn p1" onclick="pick(1)"><span class="p-num">P1</span></button>
+      <button class="p-btn p2" onclick="pick(2)"><span class="p-num">P2</span></button>
+      <button class="p-btn p3" onclick="pick(3)"><span class="p-num">P3</span></button>
+      <button class="p-btn p4" onclick="pick(4)"><span class="p-num">P4</span></button>
     </div>
     <p class="sel-hint" id="sel-hint">尚未選擇</p>
   </div>
@@ -253,9 +253,7 @@ function mkState() {
 function myName() { return playerNames[me] || `P${me}`; }
 
 function updateLobbyNames() {
-  for (let p = 1; p <= 4; p++) {
-    document.getElementById(`lname${p}`).textContent = playerNames[p] || DEFAULT_NAMES[p];
-  }
+  // Names are only shown inside the room, not in lobby
 }
 
 // ── Lobby ─────────────────────────────────────────────────────────────────────
@@ -283,6 +281,8 @@ function setErr(m) { document.getElementById('err').textContent = m; }
 // ── Enter Room ────────────────────────────────────────────────────────────────
 function go(code) {
   room = code;
+  // Reset names for this room session (avoid bleed from previous room)
+  playerNames = ['', ...DEFAULT_NAMES.slice(1)];
   document.getElementById('lobby').style.display = 'none';
   document.getElementById('game').style.display = 'block';
   document.getElementById('g-code').textContent = code;
