@@ -7,54 +7,31 @@
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
-  --bg: #12121a;
-  --surface: #1c1c28;
-  --surface2: #25253a;
-  --border: rgba(255,255,255,0.08);
-  --text: #e8e8f0;
-  --muted: #666680;
-  --p1: #e74c3c;
-  --p2: #27ae60;
-  --p3: #2980b9;
-  --p4: #9b59b6;
+  --bg: #12121a; --surface: #1c1c28; --surface2: #25253a;
+  --border: rgba(255,255,255,0.08); --text: #e8e8f0; --muted: #666680;
+  --p1: #e74c3c; --p2: #27ae60; --p3: #2980b9; --p4: #9b59b6;
 }
 body {
   font-family: 'Segoe UI', system-ui, sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  min-height: 100vh;
-  display: flex; align-items: center; justify-content: center;
-  padding: 16px;
+  background: var(--bg); color: var(--text);
+  min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 16px;
 }
 
-/* ── LOBBY ── */
+/* LOBBY */
 #lobby { width: 340px; max-width: 100%; }
 .logo { text-align: center; margin-bottom: 28px; }
 .logo h1 { font-size: 24px; font-weight: 700; }
 .logo p { font-size: 13px; color: var(--muted); margin-top: 5px; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 24px 20px; margin-bottom: 10px; }
+.card h2 { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 14px; }
 
-.card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 24px 20px;
-  margin-bottom: 10px;
-}
-.card h2 {
-  font-size: 11px; font-weight: 600; color: var(--muted);
-  text-transform: uppercase; letter-spacing: 1px; margin-bottom: 14px;
-}
-
-.player-grid {
-  display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px;
-}
+.player-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
 .p-btn {
-  padding: 16px 8px; border-radius: 10px;
-  border: 2px solid transparent; background: var(--surface2);
-  color: var(--text); font-size: 18px; font-weight: 700;
-  cursor: pointer; transition: all 0.15s; text-align: center;
+  padding: 12px 8px; border-radius: 10px; border: 2px solid transparent;
+  background: var(--surface2); color: var(--text); cursor: pointer; transition: all 0.15s; text-align: center;
 }
-.p-btn span { display: block; font-size: 11px; font-weight: 400; color: var(--muted); margin-top: 2px; }
+.p-btn .p-num { font-size: 18px; font-weight: 700; display: block; }
+.p-btn .p-name { font-size: 12px; color: var(--muted); display: block; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .p-btn.p1 { border-color: var(--p1); } .p-btn.p1.active { background: var(--p1); color: #fff; }
 .p-btn.p2 { border-color: var(--p2); } .p-btn.p2.active { background: var(--p2); color: #fff; }
 .p-btn.p3 { border-color: var(--p3); } .p-btn.p3.active { background: var(--p3); color: #fff; }
@@ -63,152 +40,99 @@ body {
 .p-btn.p2:hover:not(.active) { background: rgba(39,174,96,0.2); }
 .p-btn.p3:hover:not(.active) { background: rgba(41,128,185,0.2); }
 .p-btn.p4:hover:not(.active) { background: rgba(155,89,182,0.2); }
+.p-btn.active .p-name { color: rgba(255,255,255,0.75); }
 
-.sel-hint { text-align: center; font-size: 12px; color: var(--muted); margin-bottom: 0; }
-
+.sel-hint { text-align: center; font-size: 12px; color: var(--muted); }
 .row-input { display: flex; gap: 8px; }
-input {
+input[type="text"] {
   flex: 1; background: var(--surface2); border: 1px solid var(--border);
-  border-radius: 9px; color: var(--text); font-size: 16px; font-weight: 700;
-  padding: 10px 14px; outline: none; letter-spacing: 2px; font-family: monospace;
+  border-radius: 9px; color: var(--text); font-size: 15px; font-weight: 600;
+  padding: 10px 14px; outline: none; letter-spacing: 1px; font-family: monospace;
 }
-input:focus { border-color: rgba(255,255,255,0.25); }
-input::placeholder { letter-spacing: 0; font-weight: 400; font-size: 13px; font-family: 'Segoe UI', system-ui; }
+input[type="text"]:focus { border-color: rgba(255,255,255,0.25); }
+input[type="text"]::placeholder { letter-spacing: 0; font-weight: 400; font-size: 13px; font-family: 'Segoe UI', system-ui; }
 
-.btn {
-  padding: 10px 16px; border-radius: 9px; border: none;
-  font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.15s;
-}
+.btn { padding: 10px 16px; border-radius: 9px; border: none; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.15s; }
 .btn:active { transform: scale(0.97); }
 .btn-main { background: #4f46e5; color: #fff; width: 100%; padding: 12px; font-size: 15px; margin-bottom: 10px; }
 .btn-main:hover { background: #4338ca; }
 .btn-sec { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
 .btn-sec:hover { background: rgba(255,255,255,0.1); }
-
-.divider {
-  text-align: center; color: var(--muted); font-size: 11px; margin: 10px 0;
-  position: relative;
-}
-.divider::before, .divider::after {
-  content: ''; position: absolute; top: 50%; width: 36%;
-  height: 1px; background: var(--border);
-}
+.divider { text-align: center; color: var(--muted); font-size: 11px; margin: 10px 0; position: relative; }
+.divider::before, .divider::after { content: ''; position: absolute; top: 50%; width: 36%; height: 1px; background: var(--border); }
 .divider::before { left: 0; } .divider::after { right: 0; }
 .error { color: #f87171; font-size: 12px; margin-top: 7px; min-height: 16px; }
 
-/* ── GAME ── */
+/* GAME */
 #game { display: none; width: 100%; max-width: 360px; }
-
-.g-header {
-  display: flex; align-items: center; gap: 10px; margin-bottom: 14px;
-}
+.g-header { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
 .room-tag {
   display: flex; align-items: center; gap: 7px;
-  background: var(--surface); border: 1px solid var(--border);
-  border-radius: 8px; padding: 6px 12px;
-  font-family: monospace; font-size: 15px; font-weight: 700; letter-spacing: 2px;
-  cursor: pointer;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+  padding: 6px 12px; font-family: monospace; font-size: 15px; font-weight: 700;
+  letter-spacing: 2px; cursor: pointer;
 }
-.live-dot {
-  width: 7px; height: 7px; background: #4ade80; border-radius: 50%;
-  animation: pulse 2s ease-in-out infinite;
-}
+.live-dot { width: 7px; height: 7px; background: #4ade80; border-radius: 50%; animation: pulse 2s ease-in-out infinite; }
 @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.35} }
-
-.me-tag {
-  padding: 5px 12px; border-radius: 8px;
-  font-size: 13px; font-weight: 700; color: #fff;
-}
-.online-badge {
-  margin-left: auto; font-size: 12px; color: var(--muted);
-}
-.btn-leave {
-  background: none; border: 1px solid var(--border); border-radius: 7px;
-  color: var(--muted); padding: 5px 10px; font-size: 12px; cursor: pointer;
-}
+.me-tag { padding: 5px 12px; border-radius: 8px; font-size: 13px; font-weight: 700; color: #fff; cursor: pointer; }
+.me-tag:hover { opacity: 0.85; }
+.online-badge { margin-left: auto; font-size: 12px; color: var(--muted); }
+.btn-leave { background: none; border: 1px solid var(--border); border-radius: 7px; color: var(--muted); padding: 5px 10px; font-size: 12px; cursor: pointer; }
 .btn-leave:hover { color: var(--text); }
 
-/* Legend */
-.legend {
-  display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap;
-}
-.leg-item {
-  display: flex; align-items: center; gap: 5px;
-  background: var(--surface); border-radius: 6px;
-  padding: 4px 9px; font-size: 12px; transition: opacity 0.3s;
-}
-.leg-dot { width: 8px; height: 8px; border-radius: 50%; }
+.legend { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
+.leg-item { display: flex; align-items: center; gap: 5px; background: var(--surface); border-radius: 6px; padding: 4px 9px; font-size: 12px; transition: opacity 0.3s; }
+.leg-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 
-/* Main grid */
-.stair-grid {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 14px; overflow: hidden;
-}
-.stair-row {
-  display: flex; align-items: center;
-  border-bottom: 1px solid var(--border);
-  padding: 7px 10px; gap: 8px;
-  transition: background 0.2s;
-}
+.stair-grid { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
+.stair-row { display: flex; align-items: center; border-bottom: 1px solid var(--border); padding: 7px 10px; gap: 8px; transition: background 0.2s; }
 .stair-row:last-child { border-bottom: none; }
 .stair-row.done { background: rgba(74,222,128,0.06); }
 .stair-row.bad  { background: rgba(248,113,113,0.07); }
-
-.step-num {
-  width: 26px; text-align: center;
-  font-size: 13px; font-weight: 700; color: var(--muted);
-  flex-shrink: 0;
-}
-
-.nums {
-  display: flex; gap: 7px; flex: 1;
-}
-
-/* Each number button */
+.step-num { width: 26px; text-align: center; font-size: 13px; font-weight: 700; color: var(--muted); flex-shrink: 0; }
+.nums { display: flex; gap: 7px; flex: 1; }
 .num-btn {
-  flex: 1; height: 42px; border-radius: 9px;
-  border: 2px solid var(--border); background: var(--surface2);
-  color: var(--muted); font-size: 16px; font-weight: 700;
-  cursor: pointer; transition: all 0.15s;
-  display: flex; align-items: center; justify-content: center;
-  position: relative;
+  flex: 1; height: 42px; border-radius: 9px; border: 2px solid var(--border);
+  background: var(--surface2); color: var(--muted); font-size: 16px; font-weight: 700;
+  cursor: pointer; transition: all 0.15s; display: flex; align-items: center; justify-content: center;
 }
-/* Taken by someone else — show their color, not clickable feel */
-.num-btn.taken {
-  cursor: default; opacity: 0.9;
-}
-/* Taken by ME */
-.num-btn.mine {
-  cursor: pointer;
-}
-/* Hover only when free */
-.num-btn.free:hover {
-  border-color: rgba(255,255,255,0.3);
-  color: var(--text);
-  background: rgba(255,255,255,0.07);
-}
-/* Conflict ring */
-.num-btn.conflict {
-  box-shadow: 0 0 0 2px #f87171;
-}
+.num-btn.taken { cursor: default; opacity: 0.9; }
+.num-btn.free:hover { border-color: rgba(255,255,255,0.3); color: var(--text); background: rgba(255,255,255,0.07); }
+.num-btn.conflict { box-shadow: 0 0 0 2px #f87171; }
 
-/* Status */
-.status {
-  display: flex; align-items: center; gap: 8px;
-  margin-top: 10px; padding: 9px 13px;
-  background: var(--surface); border-radius: 9px; font-size: 13px;
-}
+.status { display: flex; align-items: center; gap: 8px; margin-top: 10px; padding: 9px 13px; background: var(--surface); border-radius: 9px; font-size: 13px; }
 .s-dot { width: 7px; height: 7px; border-radius: 50%; }
-.s-ok   { background: #4ade80; }
-.s-warn { background: #facc15; }
-.s-err  { background: #f87171; }
+.s-ok { background: #4ade80; } .s-warn { background: #facc15; } .s-err { background: #f87171; }
+.done-banner { display: none; text-align: center; margin-top: 10px; padding: 13px; background: rgba(74,222,128,0.1); border: 1px solid rgba(74,222,128,0.25); border-radius: 10px; font-weight: 600; font-size: 14px; }
 
-.done-banner {
-  display: none; text-align: center; margin-top: 10px; padding: 13px;
-  background: rgba(74,222,128,0.1); border: 1px solid rgba(74,222,128,0.25);
-  border-radius: 10px; font-weight: 600; font-size: 14px;
+/* MODAL */
+.modal-bg {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.65); backdrop-filter: blur(3px);
+  align-items: center; justify-content: center; z-index: 200; padding: 20px;
 }
+.modal-bg.show { display: flex; }
+.modal {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 16px; padding: 28px 24px; width: 300px; max-width: 100%;
+  animation: pop 0.15s ease;
+}
+@keyframes pop { from { transform: scale(0.92); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.modal h3 { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+.modal p { font-size: 13px; color: var(--muted); line-height: 1.6; margin-bottom: 20px; }
+.modal-btns { display: flex; gap: 8px; }
+.modal-btns .btn { flex: 1; padding: 11px; font-size: 14px; }
+.btn-danger { background: #e74c3c; color: #fff; }
+.btn-danger:hover { background: #c0392b; }
+
+/* Name edit modal */
+.name-input-wrap { margin-bottom: 20px; }
+.name-input-wrap input {
+  width: 100%; background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 9px; color: var(--text); font-size: 15px; padding: 10px 14px;
+  outline: none; letter-spacing: 0; font-weight: 400; font-family: 'Segoe UI', system-ui;
+}
+.name-input-wrap input:focus { border-color: rgba(255,255,255,0.3); }
 
 .toast {
   position: fixed; bottom: 20px; left: 50%;
@@ -228,25 +152,22 @@ input::placeholder { letter-spacing: 0; font-weight: 400; font-size: 13px; font-
     <h1>🪜 階梯組隊</h1>
     <p>選數字，顏色即時同步給所有人</p>
   </div>
-
   <div class="card">
-    <h2>你是哪位玩家？</h2>
-    <div class="player-grid">
-      <button class="p-btn p1" onclick="pick(1)">P1<span>玩家一</span></button>
-      <button class="p-btn p2" onclick="pick(2)">P2<span>玩家二</span></button>
-      <button class="p-btn p3" onclick="pick(3)">P3<span>玩家三</span></button>
-      <button class="p-btn p4" onclick="pick(4)">P4<span>玩家四</span></button>
+    <h2>選擇玩家身份（點名稱可編輯）</h2>
+    <div class="player-grid" id="player-grid">
+      <button class="p-btn p1" onclick="pick(1)"><span class="p-num">P1</span><span class="p-name" id="lname1">玩家一</span></button>
+      <button class="p-btn p2" onclick="pick(2)"><span class="p-num">P2</span><span class="p-name" id="lname2">玩家二</span></button>
+      <button class="p-btn p3" onclick="pick(3)"><span class="p-num">P3</span><span class="p-name" id="lname3">玩家三</span></button>
+      <button class="p-btn p4" onclick="pick(4)"><span class="p-num">P4</span><span class="p-name" id="lname4">玩家四</span></button>
     </div>
     <p class="sel-hint" id="sel-hint">尚未選擇</p>
   </div>
-
   <div class="card">
     <button class="btn btn-main" onclick="createRoom()">＋ 建立新房間</button>
     <div class="divider">或加入現有房間</div>
     <div class="row-input" style="margin-top:10px">
-      <input id="code-in" placeholder="輸入房間代號" maxlength="8"
-        oninput="this.value=this.value.toUpperCase()"
-        onkeydown="if(event.key==='Enter')joinRoom()">
+      <input type="text" id="code-in" placeholder="輸入房間代號" maxlength="8"
+        oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter')joinRoom()">
       <button class="btn btn-sec" onclick="joinRoom()">進入</button>
     </div>
     <div class="error" id="err"></div>
@@ -260,22 +181,45 @@ input::placeholder { letter-spacing: 0; font-weight: 400; font-size: 13px; font-
       <div class="live-dot"></div>
       <span id="g-code"></span>
     </div>
-    <div class="me-tag" id="g-me"></div>
+    <div class="me-tag" id="g-me" onclick="openNameModal()" title="點擊修改名稱"></div>
     <div class="online-badge"><span id="g-online">0</span> 人在線</div>
     <button class="btn-leave" onclick="leave()">離開</button>
   </div>
-
   <div class="legend" id="legend"></div>
-
   <div class="stair-grid" id="grid"></div>
-
   <div class="status" id="status">
     <div class="s-dot s-warn" id="s-dot"></div>
     <span id="s-txt">等待選擇…</span>
-    <button class="btn btn-sec" onclick="resetAll()"
-      style="margin-left:auto;font-size:11px;padding:3px 9px">重置</button>
+    <button class="btn btn-sec" onclick="resetAll()" style="margin-left:auto;font-size:11px;padding:3px 9px">重置</button>
   </div>
   <div class="done-banner" id="done-banner">🎉 全部完成，可以傳送了！</div>
+</div>
+
+<!-- 確認換數字 Modal -->
+<div class="modal-bg" id="confirm-modal">
+  <div class="modal">
+    <h3>確認變更？</h3>
+    <p id="confirm-msg"></p>
+    <div class="modal-btns">
+      <button class="btn btn-sec" onclick="closeConfirm()">取消</button>
+      <button class="btn btn-danger" id="confirm-ok">確認變更</button>
+    </div>
+  </div>
+</div>
+
+<!-- 編輯名稱 Modal -->
+<div class="modal-bg" id="name-modal">
+  <div class="modal">
+    <h3>✏️ 修改名稱</h3>
+    <p>為你的玩家設定一個名稱，其他人也會看到。</p>
+    <div class="name-input-wrap">
+      <input type="text" id="name-input" maxlength="12" placeholder="輸入名稱（最多12字）">
+    </div>
+    <div class="modal-btns">
+      <button class="btn btn-sec" onclick="closeNameModal()">取消</button>
+      <button class="btn btn-main" style="margin-bottom:0" onclick="saveName()">儲存</button>
+    </div>
+  </div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -295,20 +239,30 @@ const db = getDatabase(initializeApp({
 
 const STEPS = 10;
 const COLORS = ['','#e74c3c','#27ae60','#2980b9','#9b59b6'];
-const PNAME  = ['','P1','P2','P3','P4'];
+const DEFAULT_NAMES = ['','玩家一','玩家二','玩家三','玩家四'];
 
-let me = 0, room = null, presRef = null, dataRef = null, presListRef = null;
-// state[step][num] = player (1-4) or 0
+let me = 0, room = null, presRef = null, dataRef = null, presListRef = null, namesRef = null;
 let state = mkState();
+let playerNames = ['', ...DEFAULT_NAMES.slice(1)]; // index 1-4
+
 function mkState() {
   return Array.from({length: STEPS+1}, () => ({1:0,2:0,3:0,4:0}));
+}
+
+// ── Name helpers ──────────────────────────────────────────────────────────────
+function myName() { return playerNames[me] || `P${me}`; }
+
+function updateLobbyNames() {
+  for (let p = 1; p <= 4; p++) {
+    document.getElementById(`lname${p}`).textContent = playerNames[p] || DEFAULT_NAMES[p];
+  }
 }
 
 // ── Lobby ─────────────────────────────────────────────────────────────────────
 window.pick = function(p) {
   me = p;
   document.querySelectorAll('.p-btn').forEach((b,i) => b.classList.toggle('active', i===p-1));
-  document.getElementById('sel-hint').textContent = `已選擇 P${p}`;
+  document.getElementById('sel-hint').textContent = `已選擇 P${p}（${playerNames[p]}）`;
   document.getElementById('err').textContent = '';
 };
 
@@ -332,24 +286,26 @@ function go(code) {
   document.getElementById('lobby').style.display = 'none';
   document.getElementById('game').style.display = 'block';
   document.getElementById('g-code').textContent = code;
-  const mt = document.getElementById('g-me');
-  mt.textContent = PNAME[me];
-  mt.style.background = COLORS[me];
-
+  updateMeTag();
   buildGrid();
 
-  // Sync data
+  // Sync grid data
   dataRef = ref(db, `r/${code}/d`);
   onValue(dataRef, snap => {
     state = mkState();
     const v = snap.val();
-    if (v) {
-      for (let s = 1; s <= STEPS; s++) {
-        if (v[s]) for (let n = 1; n <= 4; n++)
-          state[s][n] = v[s][n] || 0;
-      }
-    }
+    if (v) for (let s = 1; s <= STEPS; s++)
+      if (v[s]) for (let n = 1; n <= 4; n++) state[s][n] = v[s][n] || 0;
     render();
+  });
+
+  // Sync names
+  namesRef = ref(db, `r/${code}/names`);
+  onValue(namesRef, snap => {
+    const v = snap.val();
+    if (v) for (let p = 1; p <= 4; p++) if (v[p]) playerNames[p] = v[p];
+    updateLobbyNames();
+    renderLegend(null); // refresh legend names
   });
 
   // Presence
@@ -363,29 +319,56 @@ function go(code) {
     document.getElementById('g-online').textContent = online.size;
     renderLegend(online);
   });
+
+  // Write my name to Firebase so others see it
+  set(ref(db, `r/${code}/names/${me}`), playerNames[me]);
 }
 
-// ── Build grid (once) ─────────────────────────────────────────────────────────
+function updateMeTag() {
+  const mt = document.getElementById('g-me');
+  mt.textContent = `✏️ ${myName()}`;
+  mt.style.background = COLORS[me];
+}
+
+// ── Name Modal ────────────────────────────────────────────────────────────────
+window.openNameModal = function() {
+  document.getElementById('name-input').value = playerNames[me] || '';
+  document.getElementById('name-modal').classList.add('show');
+  setTimeout(() => document.getElementById('name-input').focus(), 50);
+};
+window.closeNameModal = function() {
+  document.getElementById('name-modal').classList.remove('show');
+};
+window.saveName = function() {
+  const val = document.getElementById('name-input').value.trim();
+  if (!val) return;
+  playerNames[me] = val;
+  updateMeTag();
+  updateLobbyNames();
+  if (room) set(ref(db, `r/${room}/names/${me}`), val);
+  closeNameModal();
+  toast(`名稱已更新為「${val}」`);
+};
+document.getElementById('name-modal').addEventListener('keydown', e => {
+  if (e.key === 'Enter') saveName();
+  if (e.key === 'Escape') closeNameModal();
+});
+
+// ── Build grid ────────────────────────────────────────────────────────────────
 function buildGrid() {
   const g = document.getElementById('grid');
   g.innerHTML = '';
   for (let s = STEPS; s >= 1; s--) {
     const row = document.createElement('div');
-    row.className = 'stair-row';
-    row.id = `r${s}`;
-
+    row.className = 'stair-row'; row.id = `r${s}`;
     const lbl = document.createElement('div');
-    lbl.className = 'step-num';
-    lbl.textContent = s;
+    lbl.className = 'step-num'; lbl.textContent = s;
     row.appendChild(lbl);
-
     const nums = document.createElement('div');
     nums.className = 'nums';
     for (let n = 1; n <= 4; n++) {
       const btn = document.createElement('button');
-      btn.className = 'num-btn free';
-      btn.textContent = n;
-      btn.id = `b${s}-${n}`;
+      btn.className = 'num-btn free'; btn.textContent = n; btn.id = `b${s}-${n}`;
       btn.onclick = () => tap(s, n);
       nums.appendChild(btn);
     }
@@ -397,123 +380,127 @@ function buildGrid() {
 // ── Render ────────────────────────────────────────────────────────────────────
 function render() {
   let done = 0, bad = 0;
-
   for (let s = 1; s <= STEPS; s++) {
-    const st = state[s]; // {1:player,2:player,...}
-    // Check conflicts: same player picked two numbers in same row
-    const playerNums = {}; // player -> [nums]
+    const st = state[s];
+    const playerNums = {};
     let filled = 0;
     for (let n = 1; n <= 4; n++) {
-      if (st[n]) {
-        filled++;
-        if (!playerNums[st[n]]) playerNums[st[n]] = [];
-        playerNums[st[n]].push(n);
-      }
+      if (st[n]) { filled++; (playerNums[st[n]] = playerNums[st[n]] || []).push(n); }
     }
-    // A conflict = one player has 2 numbers in same row
-    const hasConflict = Object.values(playerNums).some(arr => arr.length > 1);
-    const allFilled = filled === 4;
-    const complete = allFilled && !hasConflict;
+    const hasConflict = Object.values(playerNums).some(a => a.length > 1);
+    const complete = filled === 4 && !hasConflict;
     if (hasConflict) bad++;
     if (complete) done++;
-
-    // Conflicted nums for this row
     const conflictNums = new Set();
-    Object.values(playerNums).forEach(arr => { if (arr.length > 1) arr.forEach(n => conflictNums.add(n)); });
+    Object.values(playerNums).forEach(a => { if (a.length > 1) a.forEach(n => conflictNums.add(n)); });
 
-    const row = document.getElementById(`r${s}`);
-    row.className = 'stair-row' + (complete ? ' done' : hasConflict ? ' bad' : '');
+    document.getElementById(`r${s}`).className = 'stair-row' + (complete ? ' done' : hasConflict ? ' bad' : '');
 
     for (let n = 1; n <= 4; n++) {
       const btn = document.getElementById(`b${s}-${n}`);
       const owner = st[n];
-      const isMine = owner === me;
-      const isTaken = owner && !isMine;
-      const isFree = !owner;
-      const isConflict = conflictNums.has(n);
-
       btn.className = 'num-btn' +
-        (isFree   ? ' free'  : '') +
-        (isMine   ? ' mine'  : '') +
-        (isTaken  ? ' taken' : '') +
-        (isConflict ? ' conflict' : '');
-
+        (!owner ? ' free' : owner === me ? ' mine' : ' taken') +
+        (conflictNums.has(n) ? ' conflict' : '');
       if (owner) {
         btn.style.background = COLORS[owner];
         btn.style.borderColor = COLORS[owner];
         btn.style.color = '#fff';
       } else {
-        btn.style.background = '';
-        btn.style.borderColor = '';
-        btn.style.color = '';
+        btn.style.background = btn.style.borderColor = btn.style.color = '';
       }
     }
   }
   updateStatus(done, bad);
 }
 
-// ── Tap a number button ───────────────────────────────────────────────────────
+// ── Tap with confirm ──────────────────────────────────────────────────────────
 function tap(step, num) {
   const owner = state[step][num];
-  if (owner && owner !== me) return; // taken by someone else
+  if (owner && owner !== me) return; // other player's
 
-  // Find if I already picked a number in this row
-  const myPrev = Object.keys(state[step]).find(n => Number(n) !== num && state[step][n] === me);
+  const myPrevKey = Object.keys(state[step]).find(n => Number(n) !== num && state[step][n] === me);
 
   if (owner === me) {
-    // Clicking my own pick → deselect
-    state[step][num] = 0;
-    render();
-    remove(ref(db, `r/${room}/d/${step}/${num}`));
+    // Deselect own pick — no confirm needed
+    doSet(step, num, 0, myPrevKey ? null : null);
+  } else if (myPrevKey) {
+    // Already have a pick in this row → ask for confirm
+    showConfirm(
+      `第 ${step} 層：將「${myPrevKey}」改為「${num}」？`,
+      () => doSet(step, num, me, myPrevKey)
+    );
   } else {
-    // Clear my previous pick in this row first
-    if (myPrev) {
-      state[step][myPrev] = 0;
-      remove(ref(db, `r/${room}/d/${step}/${myPrev}`));
-    }
-    // Set new pick
-    state[step][num] = me;
-    render();
-    set(ref(db, `r/${room}/d/${step}/${num}`), me);
+    // Fresh pick — no confirm needed
+    doSet(step, num, me, null);
   }
 }
 
-// ── Status ────────────────────────────────────────────────────────────────────
+function doSet(step, newNum, newVal, clearNum) {
+  if (clearNum) {
+    state[step][clearNum] = 0;
+    remove(ref(db, `r/${room}/d/${step}/${clearNum}`));
+  }
+  state[step][newNum] = newVal;
+  render();
+  newVal ? set(ref(db, `r/${room}/d/${step}/${newNum}`), newVal)
+         : remove(ref(db, `r/${room}/d/${step}/${newNum}`));
+}
+
+// ── Confirm Modal ─────────────────────────────────────────────────────────────
+let confirmCb = null;
+function showConfirm(msg, cb) {
+  confirmCb = cb;
+  document.getElementById('confirm-msg').textContent = msg;
+  document.getElementById('confirm-modal').classList.add('show');
+}
+window.closeConfirm = function() {
+  document.getElementById('confirm-modal').classList.remove('show');
+  confirmCb = null;
+};
+document.getElementById('confirm-ok').onclick = function() {
+  if (confirmCb) confirmCb();
+  closeConfirm();
+};
+document.getElementById('confirm-modal').addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeConfirm();
+});
+
+// ── Status & Legend ───────────────────────────────────────────────────────────
 function updateStatus(done, bad) {
   const dot = document.getElementById('s-dot');
   const txt = document.getElementById('s-txt');
   const banner = document.getElementById('done-banner');
   if (done === STEPS) {
-    dot.className = 's-dot s-ok'; txt.textContent = '全部 10 層完成！';
-    banner.style.display = 'block';
+    dot.className = 's-dot s-ok'; txt.textContent = '全部 10 層完成！'; banner.style.display = 'block';
   } else if (bad) {
-    dot.className = 's-dot s-err'; txt.textContent = `${bad} 層有衝突`;
-    banner.style.display = 'none';
+    dot.className = 's-dot s-err'; txt.textContent = `${bad} 層有衝突`; banner.style.display = 'none';
   } else {
-    dot.className = 's-dot s-warn'; txt.textContent = `已完成 ${done} / ${STEPS} 層`;
-    banner.style.display = 'none';
+    dot.className = 's-dot s-warn'; txt.textContent = `已完成 ${done} / ${STEPS} 層`; banner.style.display = 'none';
   }
 }
 
-// ── Legend ────────────────────────────────────────────────────────────────────
 function renderLegend(online) {
   const leg = document.getElementById('legend');
   leg.innerHTML = '';
   for (let p = 1; p <= 4; p++) {
     const el = document.createElement('div');
     el.className = 'leg-item';
-    el.style.opacity = online.has(p) ? '1' : '0.3';
-    el.innerHTML = `<div class="leg-dot" style="background:${COLORS[p]}"></div>P${p}`;
+    el.style.opacity = (!online || online.has(p)) ? '1' : '0.3';
+    el.innerHTML = `<div class="leg-dot" style="background:${COLORS[p]}"></div>
+      <span>${playerNames[p] || DEFAULT_NAMES[p]}</span>`;
     leg.appendChild(el);
   }
 }
 
+// ── Misc ──────────────────────────────────────────────────────────────────────
 window.resetAll = function() {
-  if (!confirm('確定清除全部？')) return;
+  if (!confirm('確定清除全部選擇？')) return;
   remove(ref(db, `r/${room}/d`));
 };
 window.leave = function() {
   if (dataRef) { off(dataRef); dataRef = null; }
+  if (namesRef) { off(namesRef); namesRef = null; }
   if (presListRef) { off(presListRef); presListRef = null; }
   if (presRef) { remove(presRef); presRef = null; }
   room = null; state = mkState();
