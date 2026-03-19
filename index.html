@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>協作筆記板</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0e0e11;
+    --surface: #18181d;
+    --surface2: #22222a;
+    --border: rgba(255,255,255,0.08);
+    --accent: #7c6ff7;
+    --accent2: #a78bfa;
+    --text: #f0eff8;
+    --muted: #7d7c8a;
+    --mono: 'DM Mono', monospace;
+    --sans: 'Syne', sans-serif;
+    --radius: 12px;
+  }
+
+  body {
+    font-family: var(--sans);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  /* Ambient grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(124,111,247,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(124,111,247,0.04) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Glow orbs */
+  body::after {
+    content: '';
+    position: fixed;
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, rgba(124,111,247,0.12) 0%, transparent 70%);
+    top: -100px; left: 50%;
+    transform: translateX(-50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .card {
+    position: relative;
+    z-index: 1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 48px 44px 40px;
+    width: 420px;
+    max-width: 95vw;
+    box-shadow: 0 32px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.04);
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 36px;
+  }
+
+  .logo-icon {
+    width: 36px; height: 36px;
+    background: linear-gradient(135deg, #7c6ff7, #a78bfa);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+  }
+
+  .logo-text {
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+    color: var(--text);
+  }
+
+  .logo-text span {
+    color: var(--accent2);
+  }
+
+  h1 {
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    line-height: 1.2;
+    margin-bottom: 8px;
+    color: var(--text);
+  }
+
+  .subtitle {
+    font-size: 14px;
+    color: var(--muted);
+    margin-bottom: 32px;
+    line-height: 1.6;
+    font-family: var(--mono);
+  }
+
+  .divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 24px 0;
+    color: var(--muted);
+    font-size: 12px;
+    font-family: var(--mono);
+  }
+  .divider::before, .divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .input-group {
+    margin-bottom: 16px;
+  }
+
+  label {
+    display: block;
+    font-size: 12px;
+    font-family: var(--mono);
+    color: var(--muted);
+    margin-bottom: 8px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  input[type="text"] {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 15px;
+    padding: 12px 16px;
+    outline: none;
+    transition: border-color 0.2s;
+    letter-spacing: 0.5px;
+  }
+  input[type="text"]::placeholder { color: var(--muted); }
+  input[type="text"]:focus { border-color: var(--accent); }
+
+  .btn {
+    width: 100%;
+    padding: 13px;
+    border-radius: var(--radius);
+    font-family: var(--sans);
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all 0.15s;
+    letter-spacing: -0.2px;
+  }
+  .btn:active { transform: scale(0.98); }
+
+  .btn-primary {
+    background: linear-gradient(135deg, #7c6ff7, #9d8df9);
+    color: #fff;
+    box-shadow: 0 4px 20px rgba(124,111,247,0.35);
+  }
+  .btn-primary:hover { box-shadow: 0 4px 28px rgba(124,111,247,0.55); }
+
+  .btn-secondary {
+    background: var(--surface2);
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+  .btn-secondary:hover { border-color: rgba(255,255,255,0.2); }
+
+  .error {
+    font-size: 13px;
+    font-family: var(--mono);
+    color: #f87171;
+    margin-top: 10px;
+    min-height: 20px;
+  }
+
+  /* Room page */
+  #room-page {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: var(--bg);
+    flex-direction: column;
+    z-index: 10;
+  }
+  #room-page.active { display: flex; }
+
+  .room-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 14px 24px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  .room-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-family: var(--mono);
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: border-color 0.2s;
+  }
+  .room-badge:hover { border-color: rgba(255,255,255,0.2); }
+  .room-badge .dot {
+    width: 7px; height: 7px;
+    background: #4ade80;
+    border-radius: 50%;
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.6; transform: scale(0.85); }
+  }
+
+  .room-header-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+    flex: 1;
+  }
+
+  .online-count {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-family: var(--mono);
+    color: var(--muted);
+  }
+  .online-dot {
+    width: 6px; height: 6px;
+    background: #4ade80;
+    border-radius: 50%;
+  }
+
+  .room-actions {
+    display: flex;
+    gap: 8px;
+  }
+
+  .icon-btn {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--muted);
+    padding: 7px 12px;
+    cursor: pointer;
+    font-family: var(--mono);
+    font-size: 12px;
+    transition: all 0.15s;
+  }
+  .icon-btn:hover { color: var(--text); border-color: rgba(255,255,255,0.2); }
+
+  .editor-area {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+  }
+
+  #note-editor {
+    width: 100%;
+    height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 16px;
+    line-height: 1.8;
+    border: none;
+    outline: none;
+    resize: none;
+    padding: 36px 10%;
+    caret-color: var(--accent2);
+    letter-spacing: 0.2px;
+  }
+  #note-editor::placeholder { color: var(--muted); }
+
+  /* Toolbar */
+  .toolbar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 24px;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  .toolbar-btn {
+    background: none;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    color: var(--muted);
+    padding: 5px 10px;
+    cursor: pointer;
+    font-family: var(--mono);
+    font-size: 13px;
+    transition: all 0.15s;
+  }
+  .toolbar-btn:hover { color: var(--text); background: var(--surface2); border-color: var(--border); }
+
+  .save-indicator {
+    margin-left: auto;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: color 0.3s;
+  }
+  .save-indicator.saving { color: var(--accent2); }
+  .save-indicator.saved { color: #4ade80; }
+
+  .char-count {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 28px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 20px;
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--text);
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.25s;
+    z-index: 999;
+  }
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  /* Config modal */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+  }
+  .modal-overlay.active { display: flex; }
+
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px;
+    width: 500px;
+    max-width: 95vw;
+  }
+  .modal h2 { font-size: 18px; font-weight: 600; margin-bottom: 8px; }
+  .modal p { font-size: 13px; font-family: var(--mono); color: var(--muted); margin-bottom: 24px; line-height: 1.6; }
+  .modal .input-group { margin-bottom: 12px; }
+  .modal-actions { display: flex; gap: 10px; margin-top: 24px; }
+  .modal-actions .btn { flex: 1; padding: 11px; font-size: 14px; }
+
+  .code-hint {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--muted);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 20px;
+    line-height: 1.7;
+    white-space: pre-wrap;
+    word-break: break-all;
+  }
+  .code-hint span { color: var(--accent2); }
+</style>
+</head>
+<body>
+
+<!-- Lobby Page -->
+<div id="lobby-page">
+  <div class="card">
+    <div class="logo">
+      <div class="logo-icon">✦</div>
+      <div class="logo-text">collab<span>note</span></div>
+    </div>
+
+    <h1>即時協作<br>筆記板</h1>
+    <p class="subtitle">建立或加入房間，與他人即時同步編輯。</p>
+
+    <button class="btn btn-primary" onclick="createRoom()" style="margin-bottom:12px">
+      ✦ 建立新房間
+    </button>
+
+    <div class="divider">或加入現有房間</div>
+
+    <div class="input-group">
+      <label>房間代號</label>
+      <input type="text" id="room-input" placeholder="輸入 6 碼代號" maxlength="6" oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter')joinRoom()">
+    </div>
+    <div class="input-group">
+      <label>你的名稱（選填）</label>
+      <input type="text" id="name-input" placeholder="訪客" maxlength="20">
+    </div>
+
+    <button class="btn btn-secondary" onclick="joinRoom()">進入房間</button>
+    <div class="error" id="error-msg"></div>
+
+    <div style="margin-top:20px; text-align:center">
+      <button class="icon-btn" onclick="showConfigModal()">⚙ Firebase 設定</button>
+    </div>
+  </div>
+</div>
+
+<!-- Room Page -->
+<div id="room-page">
+  <div class="room-header">
+    <div class="room-badge" onclick="copyRoomCode()" title="點擊複製房間代號">
+      <div class="dot"></div>
+      <span id="room-code-display">------</span>
+    </div>
+    <div class="room-header-title" id="room-title">協作筆記</div>
+    <div class="online-count">
+      <div class="online-dot"></div>
+      <span id="online-count">1</span> 人在線
+    </div>
+    <div class="room-actions">
+      <button class="icon-btn" onclick="copyRoomCode()">複製代號</button>
+      <button class="icon-btn" onclick="leaveRoom()">離開</button>
+    </div>
+  </div>
+
+  <div class="editor-area">
+    <textarea id="note-editor" placeholder="開始輸入筆記…&#10;&#10;這份筆記會即時同步給房間內所有人。"></textarea>
+  </div>
+
+  <div class="toolbar">
+    <button class="toolbar-btn" onclick="insertText('## ')">H2</button>
+    <button class="toolbar-btn" onclick="insertText('### ')">H3</button>
+    <button class="toolbar-btn" onclick="insertText('- ')">• 列表</button>
+    <button class="toolbar-btn" onclick="insertText('> ')">引言</button>
+    <button class="toolbar-btn" onclick="insertText('`')">程式碼</button>
+    <button class="toolbar-btn" onclick="insertText('---\n')">分隔線</button>
+    <span class="char-count" id="char-count">0 字元</span>
+    <div class="save-indicator" id="save-indicator">
+      <span id="save-dot">●</span>
+      <span id="save-text">已同步</span>
+    </div>
+  </div>
+</div>
+
+<!-- Config Modal -->
+<div class="modal-overlay" id="config-modal">
+  <div class="modal">
+    <h2>⚙ Firebase 設定</h2>
+    <p>請填入你的 Firebase 專案設定。<br>取得方式請參考下方說明。</p>
+
+    <div class="code-hint">1. 前往 <span>console.firebase.google.com</span>
+2. 建立專案 → 新增 Web 應用程式
+3. 複製 firebaseConfig 的各欄位值
+4. 在 Realtime Database 中建立資料庫
+5. 規則（測試模式）：<span>{ "rules": { ".read": true, ".write": true } }</span></div>
+
+    <div class="input-group">
+      <label>apiKey</label>
+      <input type="text" id="cfg-apiKey" placeholder="AIzaSy...">
+    </div>
+    <div class="input-group">
+      <label>authDomain</label>
+      <input type="text" id="cfg-authDomain" placeholder="your-app.firebaseapp.com">
+    </div>
+    <div class="input-group">
+      <label>databaseURL</label>
+      <input type="text" id="cfg-databaseURL" placeholder="https://your-app-default-rtdb.firebaseio.com">
+    </div>
+    <div class="input-group">
+      <label>projectId</label>
+      <input type="text" id="cfg-projectId" placeholder="your-app-id">
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeConfigModal()">取消</button>
+      <button class="btn btn-primary" onclick="saveConfig()">儲存並套用</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- Firebase SDK -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import {
+  getDatabase, ref, set, onValue, off, onDisconnect, push, remove, serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+// ─── State ───────────────────────────────────────────────────────────────────
+let app = null, db = null;
+let currentRoom = null;
+let userName = '';
+let presenceRef = null;
+let noteRef = null;
+let isRemoteUpdate = false;
+let saveTimeout = null;
+
+// ─── Config storage ──────────────────────────────────────────────────────────
+function loadConfig() {
+  try { return JSON.parse(localStorage.getItem('firebase-cfg') || 'null'); } catch { return null; }
+}
+function saveConfigToStorage(cfg) {
+  localStorage.setItem('firebase-cfg', JSON.stringify(cfg));
+}
+
+function initFirebase(cfg) {
+  try {
+    if (app) return true;
+    app = initializeApp(cfg);
+    db = getDatabase(app);
+    return true;
+  } catch(e) {
+    console.error(e);
+    return false;
+  }
+}
+
+// Known config (all fields except apiKey)
+const PRESET_CFG = {
+  apiKey: '',
+  authDomain: 'havefun-318dd.firebaseapp.com',
+  databaseURL: 'https://havefun-318dd-default-rtdb.firebaseio.com',
+  projectId: 'havefun-318dd',
+};
+
+// Auto-load: merge preset with any saved config
+const _saved = loadConfig() || {};
+const _merged = Object.assign({}, PRESET_CFG, _saved);
+saveConfigToStorage(_merged);
+if (_merged.apiKey) initFirebase(_merged);
+
+// ─── Lobby ───────────────────────────────────────────────────────────────────
+function randCode() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  return Array.from({length:6}, () => chars[Math.floor(Math.random()*chars.length)]).join('');
+}
+
+window.createRoom = function() {
+  if (!checkFirebase()) return;
+  const code = randCode();
+  document.getElementById('room-input').value = code;
+  joinRoom();
+};
+
+window.joinRoom = function() {
+  if (!checkFirebase()) return;
+  const code = document.getElementById('room-input').value.trim().toUpperCase();
+  const name = document.getElementById('name-input').value.trim() || '訪客';
+  const err = document.getElementById('error-msg');
+
+  if (code.length !== 6) { err.textContent = '請輸入 6 碼房間代號'; return; }
+  err.textContent = '';
+  userName = name;
+  enterRoom(code);
+};
+
+function checkFirebase() {
+  if (!db) {
+    document.getElementById('error-msg').textContent = '請先設定 Firebase（點擊下方 ⚙ 按鈕）';
+    return false;
+  }
+  return true;
+}
+
+// ─── Room ─────────────────────────────────────────────────────────────────────
+function enterRoom(code) {
+  currentRoom = code;
+  document.getElementById('room-code-display').textContent = code;
+  document.getElementById('lobby-page').style.display = 'none';
+  document.getElementById('room-page').classList.add('active');
+
+  // Note sync
+  noteRef = ref(db, `rooms/${code}/note`);
+  onValue(noteRef, snap => {
+    const val = snap.val() || '';
+    const editor = document.getElementById('note-editor');
+    if (document.activeElement !== editor || isRemoteUpdate) {
+      isRemoteUpdate = true;
+      const pos = editor.selectionStart;
+      editor.value = val;
+      editor.setSelectionRange(pos, pos);
+      isRemoteUpdate = false;
+      updateCharCount(val.length);
+    }
+  });
+
+  // Presence
+  const presencesRef = ref(db, `rooms/${code}/presence`);
+  presenceRef = push(presencesRef);
+  set(presenceRef, { name: userName, joined: serverTimestamp() });
+  onDisconnect(presenceRef).remove();
+
+  onValue(presencesRef, snap => {
+    const count = snap.exists() ? Object.keys(snap.val()).length : 0;
+    document.getElementById('online-count').textContent = count;
+  });
+
+  // Editor events
+  const editor = document.getElementById('note-editor');
+  editor.addEventListener('input', onEditorInput);
+}
+
+function onEditorInput(e) {
+  if (isRemoteUpdate) return;
+  const val = e.target.value;
+  updateCharCount(val.length);
+  setSaveState('saving');
+  clearTimeout(saveTimeout);
+  saveTimeout = setTimeout(() => {
+    set(noteRef, val).then(() => setSaveState('saved'));
+  }, 400);
+}
+
+function setSaveState(state) {
+  const ind = document.getElementById('save-indicator');
+  const txt = document.getElementById('save-text');
+  ind.className = 'save-indicator ' + state;
+  txt.textContent = state === 'saving' ? '同步中…' : '已同步';
+}
+
+function updateCharCount(n) {
+  document.getElementById('char-count').textContent = n + ' 字元';
+}
+
+window.leaveRoom = function() {
+  const editor = document.getElementById('note-editor');
+  editor.removeEventListener('input', onEditorInput);
+  editor.value = '';
+
+  if (noteRef) { off(noteRef); noteRef = null; }
+  if (presenceRef) { remove(presenceRef); presenceRef = null; }
+  currentRoom = null;
+
+  document.getElementById('room-page').classList.remove('active');
+  document.getElementById('lobby-page').style.display = 'flex';
+};
+
+window.copyRoomCode = function() {
+  if (!currentRoom) return;
+  navigator.clipboard.writeText(currentRoom).then(() => showToast(`房間代號 ${currentRoom} 已複製`));
+};
+
+window.insertText = function(text) {
+  const editor = document.getElementById('note-editor');
+  const start = editor.selectionStart;
+  const before = editor.value.substring(0, start);
+  const after = editor.value.substring(editor.selectionEnd);
+  editor.value = before + text + after;
+  editor.selectionStart = editor.selectionEnd = start + text.length;
+  editor.dispatchEvent(new Event('input'));
+  editor.focus();
+};
+
+// ─── Config modal ─────────────────────────────────────────────────────────────
+window.showConfigModal = function() {
+  const cfg = Object.assign({}, PRESET_CFG, loadConfig() || {});
+  ['apiKey','authDomain','databaseURL','projectId'].forEach(k => {
+    const el = document.getElementById('cfg-'+k);
+    if (el) el.value = cfg[k] || '';
+  });
+  document.getElementById('config-modal').classList.add('active');
+};
+
+window.closeConfigModal = function() {
+  document.getElementById('config-modal').classList.remove('active');
+};
+
+window.saveConfig = function() {
+  const cfg = {
+    apiKey: document.getElementById('cfg-apiKey').value.trim(),
+    authDomain: document.getElementById('cfg-authDomain').value.trim(),
+    databaseURL: document.getElementById('cfg-databaseURL').value.trim(),
+    projectId: document.getElementById('cfg-projectId').value.trim(),
+  };
+  if (!cfg.apiKey || !cfg.databaseURL) {
+    showToast('請填寫 apiKey 和 databaseURL');
+    return;
+  }
+  saveConfigToStorage(cfg);
+  app = null; db = null;
+  if (initFirebase(cfg)) {
+    closeConfigModal();
+    showToast('Firebase 設定已儲存 ✓');
+    document.getElementById('error-msg').textContent = '';
+  } else {
+    showToast('設定有誤，請再確認');
+  }
+};
+
+// ─── Toast ────────────────────────────────────────────────────────────────────
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+window.showToast = showToast;
+
+// ─── Keyboard shortcuts ───────────────────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    document.getElementById('config-modal').classList.remove('active');
+  }
+});
+
+// Click outside modal closes it
+document.getElementById('config-modal').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeConfigModal();
+});
+</script>
+</body>
+</html>
