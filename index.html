@@ -3,758 +3,540 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>協作筆記板</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700&display=swap" rel="stylesheet">
+<title>階梯組隊協作</title>
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-  :root {
-    --bg: #0e0e11;
-    --surface: #18181d;
-    --surface2: #22222a;
-    --border: rgba(255,255,255,0.08);
-    --accent: #7c6ff7;
-    --accent2: #a78bfa;
-    --text: #f0eff8;
-    --muted: #7d7c8a;
-    --mono: 'DM Mono', monospace;
-    --sans: 'Syne', sans-serif;
-    --radius: 12px;
-  }
+:root {
+  --bg: #1a1a2e;
+  --surface: #16213e;
+  --surface2: #0f3460;
+  --text: #e0e0e0;
+  --muted: #888;
+  --radius: 10px;
+  --p1: #e74c3c;
+  --p2: #27ae60;
+  --p3: #2980b9;
+  --p4: #8e44ad;
+}
 
-  body {
-    font-family: var(--sans);
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-  }
+body {
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
 
-  /* Ambient grid background */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image:
-      linear-gradient(rgba(124,111,247,0.04) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(124,111,247,0.04) 1px, transparent 1px);
-    background-size: 40px 40px;
-    pointer-events: none;
-    z-index: 0;
-  }
+/* ── LOBBY ── */
+#lobby { width: 360px; max-width: 100%; }
 
-  /* Glow orbs */
-  body::after {
-    content: '';
-    position: fixed;
-    width: 500px; height: 500px;
-    background: radial-gradient(circle, rgba(124,111,247,0.12) 0%, transparent 70%);
-    top: -100px; left: 50%;
-    transform: translateX(-50%);
-    pointer-events: none;
-    z-index: 0;
-  }
+.logo { text-align: center; margin-bottom: 32px; }
+.logo h1 { font-size: 26px; font-weight: 700; }
+.logo p { font-size: 13px; color: var(--muted); margin-top: 6px; }
 
-  .card {
-    position: relative;
-    z-index: 1;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    padding: 48px 44px 40px;
-    width: 420px;
-    max-width: 95vw;
-    box-shadow: 0 32px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.04);
-  }
+.card {
+  background: var(--surface);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 16px;
+  padding: 28px 24px;
+  margin-bottom: 12px;
+}
+.card h2 {
+  font-size: 12px; font-weight: 600; color: var(--muted);
+  text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px;
+}
 
-  .logo {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 36px;
-  }
+.player-selector {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px;
+}
+.player-btn {
+  padding: 14px 8px; border-radius: var(--radius);
+  border: 2px solid transparent; background: var(--surface2);
+  color: var(--text); font-size: 14px; font-weight: 600;
+  cursor: pointer; transition: all 0.15s;
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+}
+.player-btn .p-num { font-size: 22px; font-weight: 700; }
+.player-btn.p1 { border-color: var(--p1); }
+.player-btn.p2 { border-color: var(--p2); }
+.player-btn.p3 { border-color: var(--p3); }
+.player-btn.p4 { border-color: var(--p4); }
+.player-btn.p1:hover, .player-btn.p1.selected { background: var(--p1); }
+.player-btn.p2:hover, .player-btn.p2.selected { background: var(--p2); }
+.player-btn.p3:hover, .player-btn.p3.selected { background: var(--p3); }
+.player-btn.p4:hover, .player-btn.p4.selected { background: var(--p4); }
 
-  .logo-icon {
-    width: 36px; height: 36px;
-    background: linear-gradient(135deg, #7c6ff7, #a78bfa);
-    border-radius: 10px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 18px;
-  }
+.room-input-row { display: flex; gap: 8px; margin-bottom: 8px; }
 
-  .logo-text {
-    font-size: 20px;
-    font-weight: 700;
-    letter-spacing: -0.3px;
-    color: var(--text);
-  }
+input[type="text"] {
+  flex: 1; background: var(--surface2);
+  border: 1px solid rgba(255,255,255,0.1); border-radius: var(--radius);
+  color: var(--text); font-size: 15px; padding: 11px 14px; outline: none;
+  letter-spacing: 2px; font-family: monospace; font-weight: 600;
+}
+input[type="text"]:focus { border-color: rgba(255,255,255,0.3); }
+input[type="text"]::placeholder { letter-spacing: 0; font-weight: 400; font-family: 'Segoe UI', system-ui; }
 
-  .logo-text span {
-    color: var(--accent2);
-  }
+.btn {
+  padding: 11px 18px; border-radius: var(--radius); border: none;
+  font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.15s;
+}
+.btn:active { transform: scale(0.97); }
+.btn-primary { background: #4f46e5; color: #fff; width: 100%; padding: 13px; font-size: 15px; }
+.btn-primary:hover { background: #4338ca; }
+.btn-sm { background: rgba(255,255,255,0.1); color: var(--text); }
+.btn-sm:hover { background: rgba(255,255,255,0.18); }
 
-  h1 {
-    font-size: 26px;
-    font-weight: 700;
-    letter-spacing: -0.5px;
-    line-height: 1.2;
-    margin-bottom: 8px;
-    color: var(--text);
-  }
+.divider {
+  text-align: center; color: var(--muted); font-size: 12px;
+  margin: 12px 0; position: relative;
+}
+.divider::before, .divider::after {
+  content: ''; position: absolute; top: 50%; width: 38%;
+  height: 1px; background: rgba(255,255,255,0.08);
+}
+.divider::before { left: 0; } .divider::after { right: 0; }
 
-  .subtitle {
-    font-size: 14px;
-    color: var(--muted);
-    margin-bottom: 32px;
-    line-height: 1.6;
-    font-family: var(--mono);
-  }
+.error { color: #f87171; font-size: 13px; margin-top: 8px; min-height: 18px; }
 
-  .divider {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin: 24px 0;
-    color: var(--muted);
-    font-size: 12px;
-    font-family: var(--mono);
-  }
-  .divider::before, .divider::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: var(--border);
-  }
+/* ── GAME ── */
+#game { display: none; width: 100%; max-width: 520px; }
 
-  .input-group {
-    margin-bottom: 16px;
-  }
+.game-header {
+  display: flex; align-items: center; gap: 12px;
+  margin-bottom: 16px; flex-wrap: wrap;
+}
+.room-badge {
+  background: var(--surface); border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 8px; padding: 6px 14px;
+  font-family: monospace; font-size: 16px; font-weight: 700;
+  letter-spacing: 2px; cursor: pointer;
+  display: flex; align-items: center; gap: 8px;
+}
+.online-dot {
+  width: 8px; height: 8px; background: #4ade80; border-radius: 50%;
+  animation: blink 2s ease-in-out infinite;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.4} }
 
-  label {
-    display: block;
-    font-size: 12px;
-    font-family: var(--mono);
-    color: var(--muted);
-    margin-bottom: 8px;
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
-  }
+.my-player-badge { padding: 6px 14px; border-radius: 8px; font-size: 13px; font-weight: 700; }
+.online-info { margin-left: auto; font-size: 12px; color: var(--muted); }
+.btn-leave {
+  background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1);
+  color: var(--muted); padding: 6px 14px; border-radius: 8px; font-size: 13px; cursor: pointer;
+}
+.btn-leave:hover { color: var(--text); }
 
-  input[type="text"] {
-    width: 100%;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    color: var(--text);
-    font-family: var(--mono);
-    font-size: 15px;
-    padding: 12px 16px;
-    outline: none;
-    transition: border-color 0.2s;
-    letter-spacing: 0.5px;
-  }
-  input[type="text"]::placeholder { color: var(--muted); }
-  input[type="text"]:focus { border-color: var(--accent); }
+.legend { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+.legend-item {
+  display: flex; align-items: center; gap: 6px;
+  background: var(--surface); border-radius: 6px; padding: 5px 10px; font-size: 13px;
+}
+.legend-dot { width: 10px; height: 10px; border-radius: 50%; }
 
-  .btn {
-    width: 100%;
-    padding: 13px;
-    border-radius: var(--radius);
-    font-family: var(--sans);
-    font-size: 15px;
-    font-weight: 600;
-    cursor: pointer;
-    border: none;
-    transition: all 0.15s;
-    letter-spacing: -0.2px;
-  }
-  .btn:active { transform: scale(0.98); }
+.grid-wrapper {
+  background: var(--surface); border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 14px; overflow: hidden;
+}
+.grid-header {
+  display: grid; grid-template-columns: 44px repeat(4, 1fr);
+  background: rgba(255,255,255,0.05); border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.grid-header-cell {
+  padding: 10px 6px; text-align: center;
+  font-size: 12px; font-weight: 700; letter-spacing: 0.5px;
+}
+.grid-header-cell.p1c { color: var(--p1); }
+.grid-header-cell.p2c { color: var(--p2); }
+.grid-header-cell.p3c { color: var(--p3); }
+.grid-header-cell.p4c { color: var(--p4); }
 
-  .btn-primary {
-    background: linear-gradient(135deg, #7c6ff7, #9d8df9);
-    color: #fff;
-    box-shadow: 0 4px 20px rgba(124,111,247,0.35);
-  }
-  .btn-primary:hover { box-shadow: 0 4px 28px rgba(124,111,247,0.55); }
+.grid-row {
+  display: grid; grid-template-columns: 44px repeat(4, 1fr);
+  border-bottom: 1px solid rgba(255,255,255,0.05); transition: background 0.2s;
+}
+.grid-row:last-child { border-bottom: none; }
+.grid-row.completed { background: rgba(74,222,128,0.07); }
+.grid-row.conflict  { background: rgba(248,113,113,0.09); }
 
-  .btn-secondary {
-    background: var(--surface2);
-    color: var(--text);
-    border: 1px solid var(--border);
-  }
-  .btn-secondary:hover { border-color: rgba(255,255,255,0.2); }
+.step-label {
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px; font-weight: 700; color: var(--muted);
+  border-right: 1px solid rgba(255,255,255,0.05);
+}
 
-  .error {
-    font-size: 13px;
-    font-family: var(--mono);
-    color: #f87171;
-    margin-top: 10px;
-    min-height: 20px;
-  }
+.cell {
+  display: flex; align-items: center; justify-content: center;
+  padding: 6px 4px; position: relative;
+}
 
-  /* Room page */
-  #room-page {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: var(--bg);
-    flex-direction: column;
-    z-index: 10;
-  }
-  #room-page.active { display: flex; }
+.picker { display: flex; gap: 3px; }
+.pick-btn {
+  width: 28px; height: 28px; border-radius: 6px;
+  border: 1.5px solid rgba(255,255,255,0.12); background: var(--surface2);
+  color: var(--muted); font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: all 0.12s;
+  display: flex; align-items: center; justify-content: center;
+}
+.pick-btn:hover { border-color: rgba(255,255,255,0.3); color: var(--text); }
+.pick-btn.sel-p1 { background: var(--p1); border-color: var(--p1); color: #fff; }
+.pick-btn.sel-p2 { background: var(--p2); border-color: var(--p2); color: #fff; }
+.pick-btn.sel-p3 { background: var(--p3); border-color: var(--p3); color: #fff; }
+.pick-btn.sel-p4 { background: var(--p4); border-color: var(--p4); color: #fff; }
+.pick-btn.conflict-btn { outline: 2px solid #f87171; outline-offset: 1px; }
 
-  .room-header {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    padding: 14px 24px;
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    flex-shrink: 0;
-  }
+.other-cell {
+  width: 32px; height: 32px; border-radius: 8px;
+  font-size: 15px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(255,255,255,0.05); color: var(--muted);
+}
+.other-cell.has-val { color: #fff; }
+.other-cell.conflict-cell { outline: 2px solid #f87171; outline-offset: 1px; }
 
-  .room-badge {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 6px 12px;
-    font-family: var(--mono);
-    font-size: 14px;
-    font-weight: 500;
-    letter-spacing: 1px;
-    cursor: pointer;
-    transition: border-color 0.2s;
-  }
-  .room-badge:hover { border-color: rgba(255,255,255,0.2); }
-  .room-badge .dot {
-    width: 7px; height: 7px;
-    background: #4ade80;
-    border-radius: 50%;
-    animation: pulse 2s ease-in-out infinite;
-  }
-  @keyframes pulse {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.6; transform: scale(0.85); }
-  }
+.status-bar {
+  display: flex; align-items: center; gap: 10px;
+  margin-top: 12px; padding: 10px 14px;
+  background: var(--surface); border-radius: 10px;
+  font-size: 13px; flex-wrap: wrap;
+}
+.status-dot { width: 8px; height: 8px; border-radius: 50%; }
+.s-ok   { background: #4ade80; }
+.s-warn { background: #facc15; }
+.s-err  { background: #f87171; }
 
-  .room-header-title {
-    font-size: 15px;
-    font-weight: 600;
-    color: var(--text);
-    flex: 1;
-  }
+.complete-banner {
+  text-align: center; padding: 14px;
+  background: linear-gradient(135deg, rgba(74,222,128,0.15), rgba(59,130,246,0.15));
+  border: 1px solid rgba(74,222,128,0.3); border-radius: 10px;
+  margin-top: 12px; font-weight: 600; font-size: 15px; display: none;
+}
 
-  .online-count {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 13px;
-    font-family: var(--mono);
-    color: var(--muted);
-  }
-  .online-dot {
-    width: 6px; height: 6px;
-    background: #4ade80;
-    border-radius: 50%;
-  }
-
-  .room-actions {
-    display: flex;
-    gap: 8px;
-  }
-
-  .icon-btn {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    color: var(--muted);
-    padding: 7px 12px;
-    cursor: pointer;
-    font-family: var(--mono);
-    font-size: 12px;
-    transition: all 0.15s;
-  }
-  .icon-btn:hover { color: var(--text); border-color: rgba(255,255,255,0.2); }
-
-  .editor-area {
-    flex: 1;
-    overflow: hidden;
-    position: relative;
-  }
-
-  #note-editor {
-    width: 100%;
-    height: 100%;
-    background: var(--bg);
-    color: var(--text);
-    font-family: var(--mono);
-    font-size: 16px;
-    line-height: 1.8;
-    border: none;
-    outline: none;
-    resize: none;
-    padding: 36px 10%;
-    caret-color: var(--accent2);
-    letter-spacing: 0.2px;
-  }
-  #note-editor::placeholder { color: var(--muted); }
-
-  /* Toolbar */
-  .toolbar {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 10px 24px;
-    background: var(--surface);
-    border-top: 1px solid var(--border);
-    flex-shrink: 0;
-  }
-
-  .toolbar-btn {
-    background: none;
-    border: 1px solid transparent;
-    border-radius: 6px;
-    color: var(--muted);
-    padding: 5px 10px;
-    cursor: pointer;
-    font-family: var(--mono);
-    font-size: 13px;
-    transition: all 0.15s;
-  }
-  .toolbar-btn:hover { color: var(--text); background: var(--surface2); border-color: var(--border); }
-
-  .save-indicator {
-    margin-left: auto;
-    font-family: var(--mono);
-    font-size: 12px;
-    color: var(--muted);
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    transition: color 0.3s;
-  }
-  .save-indicator.saving { color: var(--accent2); }
-  .save-indicator.saved { color: #4ade80; }
-
-  .char-count {
-    font-family: var(--mono);
-    font-size: 12px;
-    color: var(--muted);
-  }
-
-  /* Toast */
-  .toast {
-    position: fixed;
-    bottom: 28px;
-    left: 50%;
-    transform: translateX(-50%) translateY(20px);
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 10px 20px;
-    font-family: var(--mono);
-    font-size: 13px;
-    color: var(--text);
-    opacity: 0;
-    pointer-events: none;
-    transition: all 0.25s;
-    z-index: 999;
-  }
-  .toast.show {
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
-  }
-
-  /* Config modal */
-  .modal-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.7);
-    z-index: 100;
-    align-items: center;
-    justify-content: center;
-    backdrop-filter: blur(4px);
-  }
-  .modal-overlay.active { display: flex; }
-
-  .modal {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 32px;
-    width: 500px;
-    max-width: 95vw;
-  }
-  .modal h2 { font-size: 18px; font-weight: 600; margin-bottom: 8px; }
-  .modal p { font-size: 13px; font-family: var(--mono); color: var(--muted); margin-bottom: 24px; line-height: 1.6; }
-  .modal .input-group { margin-bottom: 12px; }
-  .modal-actions { display: flex; gap: 10px; margin-top: 24px; }
-  .modal-actions .btn { flex: 1; padding: 11px; font-size: 14px; }
-
-  .code-hint {
-    font-family: var(--mono);
-    font-size: 12px;
-    color: var(--muted);
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 12px 16px;
-    margin-bottom: 20px;
-    line-height: 1.7;
-    white-space: pre-wrap;
-    word-break: break-all;
-  }
-  .code-hint span { color: var(--accent2); }
+.toast {
+  position: fixed; bottom: 24px; left: 50%;
+  transform: translateX(-50%) translateY(12px);
+  background: #1e293b; border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 10px; padding: 10px 20px; font-size: 13px;
+  opacity: 0; pointer-events: none; transition: all 0.2s; z-index: 999;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 </style>
 </head>
 <body>
 
-<!-- Lobby Page -->
-<div id="lobby-page">
+<!-- LOBBY -->
+<div id="lobby">
+  <div class="logo">
+    <h1>🪜 階梯組隊</h1>
+    <p>四人即時協作，避免數字重複</p>
+  </div>
+
   <div class="card">
-    <div class="logo">
-      <div class="logo-icon">✦</div>
-      <div class="logo-text">collab<span>note</span></div>
+    <h2>選擇你的玩家身份</h2>
+    <div class="player-selector">
+      <button class="player-btn p1" onclick="selectPlayer(1)">
+        <span class="p-num">P1</span><span>玩家 1</span>
+      </button>
+      <button class="player-btn p2" onclick="selectPlayer(2)">
+        <span class="p-num">P2</span><span>玩家 2</span>
+      </button>
+      <button class="player-btn p3" onclick="selectPlayer(3)">
+        <span class="p-num">P3</span><span>玩家 3</span>
+      </button>
+      <button class="player-btn p4" onclick="selectPlayer(4)">
+        <span class="p-num">P4</span><span>玩家 4</span>
+      </button>
     </div>
+    <div id="sel-label" style="text-align:center;font-size:13px;color:var(--muted)">尚未選擇</div>
+  </div>
 
-    <h1>即時協作<br>筆記板</h1>
-    <p class="subtitle">建立或加入房間，與他人即時同步編輯。</p>
-
-    <button class="btn btn-primary" onclick="createRoom()" style="margin-bottom:12px">
-      ✦ 建立新房間
-    </button>
-
+  <div class="card">
+    <h2>加入房間</h2>
+    <button class="btn btn-primary" onclick="createRoom()" style="margin-bottom:12px">＋ 建立新房間</button>
     <div class="divider">或加入現有房間</div>
-
-    <div class="input-group">
-      <label>房間代號</label>
-      <input type="text" id="room-input" placeholder="輸入 6 碼代號" maxlength="6" oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter')joinRoom()">
+    <div class="room-input-row" style="margin-top:12px">
+      <input type="text" id="room-input" placeholder="輸入房間代號"
+        maxlength="8" oninput="this.value=this.value.toUpperCase()"
+        onkeydown="if(event.key==='Enter')joinRoom()">
+      <button class="btn btn-sm" onclick="joinRoom()">進入</button>
     </div>
-    <div class="input-group">
-      <label>你的名稱（選填）</label>
-      <input type="text" id="name-input" placeholder="訪客" maxlength="20">
-    </div>
-
-    <button class="btn btn-secondary" onclick="joinRoom()">進入房間</button>
     <div class="error" id="error-msg"></div>
-
-    <div style="margin-top:20px; text-align:center">
-      <button class="icon-btn" onclick="showConfigModal()">⚙ Firebase 設定</button>
-    </div>
   </div>
 </div>
 
-<!-- Room Page -->
-<div id="room-page">
-  <div class="room-header">
-    <div class="room-badge" onclick="copyRoomCode()" title="點擊複製房間代號">
-      <div class="dot"></div>
-      <span id="room-code-display">------</span>
-    </div>
-    <div class="room-header-title" id="room-title">協作筆記</div>
-    <div class="online-count">
+<!-- GAME -->
+<div id="game">
+  <div class="game-header">
+    <div class="room-badge" onclick="copyCode()" title="點擊複製">
       <div class="online-dot"></div>
-      <span id="online-count">1</span> 人在線
+      <span id="hdr-code">------</span>
     </div>
-    <div class="room-actions">
-      <button class="icon-btn" onclick="copyRoomCode()">複製代號</button>
-      <button class="icon-btn" onclick="leaveRoom()">離開</button>
-    </div>
+    <div class="my-player-badge" id="hdr-player"></div>
+    <div class="online-info"><span id="hdr-online">0</span> 人在線</div>
+    <button class="btn-leave" onclick="leaveRoom()">離開</button>
   </div>
 
-  <div class="editor-area">
-    <textarea id="note-editor" placeholder="開始輸入筆記…&#10;&#10;這份筆記會即時同步給房間內所有人。"></textarea>
+  <div class="legend" id="legend"></div>
+
+  <div class="grid-wrapper">
+    <div class="grid-header">
+      <div class="grid-header-cell" style="color:var(--muted)">層</div>
+      <div class="grid-header-cell p1c">P1</div>
+      <div class="grid-header-cell p2c">P2</div>
+      <div class="grid-header-cell p3c">P3</div>
+      <div class="grid-header-cell p4c">P4</div>
+    </div>
+    <div id="grid-body"></div>
   </div>
 
-  <div class="toolbar">
-    <button class="toolbar-btn" onclick="insertText('## ')">H2</button>
-    <button class="toolbar-btn" onclick="insertText('### ')">H3</button>
-    <button class="toolbar-btn" onclick="insertText('- ')">• 列表</button>
-    <button class="toolbar-btn" onclick="insertText('> ')">引言</button>
-    <button class="toolbar-btn" onclick="insertText('`')">程式碼</button>
-    <button class="toolbar-btn" onclick="insertText('---\n')">分隔線</button>
-    <span class="char-count" id="char-count">0 字元</span>
-    <div class="save-indicator" id="save-indicator">
-      <span id="save-dot">●</span>
-      <span id="save-text">已同步</span>
-    </div>
+  <div class="status-bar" id="status-bar">
+    <div class="status-dot s-warn" id="status-dot"></div>
+    <span id="status-text">等待玩家選擇數字…</span>
+    <button class="btn btn-sm" onclick="resetAll()"
+      style="margin-left:auto;font-size:12px;padding:4px 10px">🔄 重置</button>
   </div>
-</div>
-
-<!-- Config Modal -->
-<div class="modal-overlay" id="config-modal">
-  <div class="modal">
-    <h2>⚙ Firebase 設定</h2>
-    <p>請填入你的 Firebase 專案設定。<br>取得方式請參考下方說明。</p>
-
-    <div class="code-hint">1. 前往 <span>console.firebase.google.com</span>
-2. 建立專案 → 新增 Web 應用程式
-3. 複製 firebaseConfig 的各欄位值
-4. 在 Realtime Database 中建立資料庫
-5. 規則（測試模式）：<span>{ "rules": { ".read": true, ".write": true } }</span></div>
-
-    <div class="input-group">
-      <label>apiKey</label>
-      <input type="text" id="cfg-apiKey" placeholder="AIzaSy...">
-    </div>
-    <div class="input-group">
-      <label>authDomain</label>
-      <input type="text" id="cfg-authDomain" placeholder="your-app.firebaseapp.com">
-    </div>
-    <div class="input-group">
-      <label>databaseURL</label>
-      <input type="text" id="cfg-databaseURL" placeholder="https://your-app-default-rtdb.firebaseio.com">
-    </div>
-    <div class="input-group">
-      <label>projectId</label>
-      <input type="text" id="cfg-projectId" placeholder="your-app-id">
-    </div>
-
-    <div class="modal-actions">
-      <button class="btn btn-secondary" onclick="closeConfigModal()">取消</button>
-      <button class="btn btn-primary" onclick="saveConfig()">儲存並套用</button>
-    </div>
-  </div>
+  <div class="complete-banner" id="complete-banner">🎉 全部 10 層完成，準備傳送！</div>
 </div>
 
 <div class="toast" id="toast"></div>
 
-<!-- Firebase SDK -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import {
-  getDatabase, ref, set, onValue, off, onDisconnect, push, remove, serverTimestamp
+  getDatabase, ref, set, onValue, off, remove, onDisconnect, push, serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
-// ─── State ───────────────────────────────────────────────────────────────────
-let app = null, db = null;
-let currentRoom = null;
-let userName = '';
-let presenceRef = null;
-let noteRef = null;
-let isRemoteUpdate = false;
-let saveTimeout = null;
-
-// ─── Config storage ──────────────────────────────────────────────────────────
-function loadConfig() {
-  try { return JSON.parse(localStorage.getItem('firebase-cfg') || 'null'); } catch { return null; }
-}
-function saveConfigToStorage(cfg) {
-  localStorage.setItem('firebase-cfg', JSON.stringify(cfg));
-}
-
-function initFirebase(cfg) {
-  try {
-    if (app) return true;
-    app = initializeApp(cfg);
-    db = getDatabase(app);
-    return true;
-  } catch(e) {
-    console.error(e);
-    return false;
-  }
-}
-
-// Known config (all fields except apiKey)
-const PRESET_CFG = {
+const app = initializeApp({
   apiKey: 'AIzaSyiABFW9OhgjY7bTtJ8Er2Wttpcev1CL0bDUBvf1ye',
   authDomain: 'playgood-e6be9.firebaseapp.com',
   databaseURL: 'https://playgood-e6be9-default-rtdb.firebaseio.com',
   projectId: 'playgood-e6be9',
-};
+});
+const db = getDatabase(app);
 
-// Auto-load: merge preset with any saved config
-const _saved = loadConfig() || {};
-const _merged = Object.assign({}, PRESET_CFG, _saved);
-saveConfigToStorage(_merged);
-if (_merged.apiKey) initFirebase(_merged);
+const STEPS = 10, PLAYERS = 4;
+const COLORS = ['','#e74c3c','#27ae60','#2980b9','#8e44ad'];
 
-// ─── Lobby ───────────────────────────────────────────────────────────────────
-function randCode() {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  return Array.from({length:6}, () => chars[Math.floor(Math.random()*chars.length)]).join('');
+let myPlayer = 0, roomCode = null;
+let presenceRef = null, dataRef = null, presencesRef = null;
+// gridData[step 1-10][player 1-4] = number 1-4 or 0
+let gridData = makeEmpty();
+
+function makeEmpty() {
+  return Array.from({length: STEPS+1}, () => [0,0,0,0,0]);
 }
 
+// ── Lobby ─────────────────────────────────────────────────────────────────────
+window.selectPlayer = function(p) {
+  myPlayer = p;
+  document.querySelectorAll('.player-btn').forEach((b,i) =>
+    b.classList.toggle('selected', i === p-1));
+  document.getElementById('sel-label').textContent = `已選擇：玩家 ${p}`;
+  document.getElementById('error-msg').textContent = '';
+};
+
 window.createRoom = function() {
-  if (!checkFirebase()) return;
-  const code = randCode();
-  document.getElementById('room-input').value = code;
+  if (!checkP()) return;
+  document.getElementById('room-input').value =
+    Math.floor(100000 + Math.random()*900000).toString();
   joinRoom();
 };
 
 window.joinRoom = function() {
-  if (!checkFirebase()) return;
-  const code = document.getElementById('room-input').value.trim().toUpperCase();
-  const name = document.getElementById('name-input').value.trim() || '訪客';
-  const err = document.getElementById('error-msg');
-
-  if (code.length !== 6) { err.textContent = '請輸入 6 碼房間代號'; return; }
-  err.textContent = '';
-  userName = name;
+  if (!checkP()) return;
+  const code = document.getElementById('room-input').value.trim();
+  if (!code) { setErr('請輸入房間代號'); return; }
+  setErr('');
   enterRoom(code);
 };
 
-function checkFirebase() {
-  if (!db) {
-    document.getElementById('error-msg').textContent = '請先設定 Firebase（點擊下方 ⚙ 按鈕）';
-    return false;
-  }
+function checkP() {
+  if (!myPlayer) { setErr('請先選擇玩家身份'); return false; }
   return true;
 }
+function setErr(m) { document.getElementById('error-msg').textContent = m; }
 
-// ─── Room ─────────────────────────────────────────────────────────────────────
+// ── Room ──────────────────────────────────────────────────────────────────────
 function enterRoom(code) {
-  currentRoom = code;
-  document.getElementById('room-code-display').textContent = code;
-  document.getElementById('lobby-page').style.display = 'none';
-  document.getElementById('room-page').classList.add('active');
+  roomCode = code;
+  document.getElementById('lobby').style.display = 'none';
+  document.getElementById('game').style.display = 'block';
+  document.getElementById('hdr-code').textContent = code;
+  const pb = document.getElementById('hdr-player');
+  pb.textContent = 'P' + myPlayer;
+  pb.style.cssText = `background:${COLORS[myPlayer]};color:#fff`;
 
-  // Note sync
-  noteRef = ref(db, `rooms/${code}/note`);
-  onValue(noteRef, snap => {
-    const val = snap.val() || '';
-    const editor = document.getElementById('note-editor');
-    if (document.activeElement !== editor || isRemoteUpdate) {
-      isRemoteUpdate = true;
-      const pos = editor.selectionStart;
-      editor.value = val;
-      editor.setSelectionRange(pos, pos);
-      isRemoteUpdate = false;
-      updateCharCount(val.length);
+  buildGrid();
+
+  // Data sync
+  dataRef = ref(db, `rooms/${code}/grid`);
+  onValue(dataRef, snap => {
+    gridData = makeEmpty();
+    const val = snap.val();
+    if (val) {
+      for (let s = 1; s <= STEPS; s++) {
+        if (val[s]) for (let p = 1; p <= PLAYERS; p++)
+          gridData[s][p] = val[s][p] || 0;
+      }
     }
+    renderGrid();
   });
 
   // Presence
-  const presencesRef = ref(db, `rooms/${code}/presence`);
+  presencesRef = ref(db, `rooms/${code}/presence`);
   presenceRef = push(presencesRef);
-  set(presenceRef, { name: userName, joined: serverTimestamp() });
+  set(presenceRef, { player: myPlayer, t: serverTimestamp() });
   onDisconnect(presenceRef).remove();
-
   onValue(presencesRef, snap => {
     const count = snap.exists() ? Object.keys(snap.val()).length : 0;
-    document.getElementById('online-count').textContent = count;
+    document.getElementById('hdr-online').textContent = count;
+    updateLegend(snap.val());
   });
-
-  // Editor events
-  const editor = document.getElementById('note-editor');
-  editor.addEventListener('input', onEditorInput);
 }
 
-function onEditorInput(e) {
-  if (isRemoteUpdate) return;
-  const val = e.target.value;
-  updateCharCount(val.length);
-  setSaveState('saving');
-  clearTimeout(saveTimeout);
-  saveTimeout = setTimeout(() => {
-    set(noteRef, val).then(() => setSaveState('saved'));
-  }, 400);
+// ── Grid ──────────────────────────────────────────────────────────────────────
+function buildGrid() {
+  const body = document.getElementById('grid-body');
+  body.innerHTML = '';
+  for (let s = STEPS; s >= 1; s--) {
+    const row = document.createElement('div');
+    row.className = 'grid-row';
+    row.id = `row-${s}`;
+    const lbl = document.createElement('div');
+    lbl.className = 'step-label';
+    lbl.textContent = s;
+    row.appendChild(lbl);
+    for (let p = 1; p <= PLAYERS; p++) {
+      const cell = document.createElement('div');
+      cell.className = 'cell';
+      cell.id = `cell-${s}-${p}`;
+      row.appendChild(cell);
+    }
+    body.appendChild(row);
+  }
 }
 
-function setSaveState(state) {
-  const ind = document.getElementById('save-indicator');
-  const txt = document.getElementById('save-text');
-  ind.className = 'save-indicator ' + state;
-  txt.textContent = state === 'saving' ? '同步中…' : '已同步';
+function renderGrid() {
+  let done = 0, conflicts = 0;
+
+  for (let s = 1; s <= STEPS; s++) {
+    const picks = gridData[s];
+    const count = {};
+    let filled = 0;
+    for (let p = 1; p <= PLAYERS; p++) {
+      if (picks[p]) { filled++; count[picks[p]] = (count[picks[p]]||0)+1; }
+    }
+    const hasConflict = Object.values(count).some(v => v > 1);
+    const complete = filled === PLAYERS && !hasConflict;
+    if (hasConflict) conflicts++;
+    if (complete) done++;
+
+    const row = document.getElementById(`row-${s}`);
+    row.className = 'grid-row' + (complete ? ' completed' : hasConflict ? ' conflict' : '');
+
+    for (let p = 1; p <= PLAYERS; p++) {
+      const cell = document.getElementById(`cell-${s}-${p}`);
+      cell.innerHTML = '';
+      const val = picks[p];
+      const isConflict = val && count[val] > 1;
+
+      if (p === myPlayer) {
+        const picker = document.createElement('div');
+        picker.className = 'picker';
+        for (let n = 1; n <= 4; n++) {
+          const btn = document.createElement('button');
+          btn.className = 'pick-btn';
+          btn.textContent = n;
+          if (val === n) {
+            btn.classList.add(`sel-p${p}`);
+            if (isConflict) btn.classList.add('conflict-btn');
+          }
+          const step = s, num = n;
+          btn.onclick = () => pickNumber(step, p, val === num ? 0 : num);
+          picker.appendChild(btn);
+        }
+        cell.appendChild(picker);
+      } else {
+        const d = document.createElement('div');
+        d.className = 'other-cell' + (val ? ' has-val' : '') + (isConflict ? ' conflict-cell' : '');
+        d.style.background = val ? COLORS[p] : '';
+        d.textContent = val || '?';
+        cell.appendChild(d);
+      }
+    }
+  }
+  updateStatus(done, conflicts);
 }
 
-function updateCharCount(n) {
-  document.getElementById('char-count').textContent = n + ' 字元';
+function pickNumber(step, player, num) {
+  gridData[step][player] = num;
+  renderGrid();
+  const path = ref(db, `rooms/${roomCode}/grid/${step}/${player}`);
+  num ? set(path, num) : remove(path);
 }
+
+function updateStatus(done, conflicts) {
+  const dot = document.getElementById('status-dot');
+  const txt = document.getElementById('status-text');
+  const banner = document.getElementById('complete-banner');
+  if (done === STEPS) {
+    dot.className = 'status-dot s-ok';
+    txt.textContent = `全部 ${STEPS} 層完成，無衝突！`;
+    banner.style.display = 'block';
+  } else if (conflicts > 0) {
+    dot.className = 'status-dot s-err';
+    txt.textContent = `${conflicts} 層有數字衝突，請修正`;
+    banner.style.display = 'none';
+  } else {
+    dot.className = 'status-dot s-warn';
+    txt.textContent = `已完成 ${done} / ${STEPS} 層`;
+    banner.style.display = 'none';
+  }
+}
+
+function updateLegend(data) {
+  const legend = document.getElementById('legend');
+  legend.innerHTML = '';
+  const online = new Set();
+  if (data) Object.values(data).forEach(v => online.add(v.player));
+  for (let p = 1; p <= PLAYERS; p++) {
+    const item = document.createElement('div');
+    item.className = 'legend-item';
+    item.style.opacity = online.has(p) ? '1' : '0.3';
+    item.innerHTML = `<div class="legend-dot" style="background:${COLORS[p]}"></div>
+      P${p} <span style="font-size:10px">${online.has(p)?'● 在線':'○ 離線'}</span>`;
+    legend.appendChild(item);
+  }
+}
+
+window.resetAll = function() {
+  if (!confirm('確定清除所有選擇？')) return;
+  remove(ref(db, `rooms/${roomCode}/grid`));
+};
 
 window.leaveRoom = function() {
-  const editor = document.getElementById('note-editor');
-  editor.removeEventListener('input', onEditorInput);
-  editor.value = '';
-
-  if (noteRef) { off(noteRef); noteRef = null; }
+  if (dataRef) { off(dataRef); dataRef = null; }
+  if (presencesRef) { off(presencesRef); presencesRef = null; }
   if (presenceRef) { remove(presenceRef); presenceRef = null; }
-  currentRoom = null;
-
-  document.getElementById('room-page').classList.remove('active');
-  document.getElementById('lobby-page').style.display = 'flex';
+  roomCode = null; gridData = makeEmpty();
+  document.getElementById('game').style.display = 'none';
+  document.getElementById('lobby').style.display = 'block';
 };
 
-window.copyRoomCode = function() {
-  if (!currentRoom) return;
-  navigator.clipboard.writeText(currentRoom).then(() => showToast(`房間代號 ${currentRoom} 已複製`));
+window.copyCode = function() {
+  navigator.clipboard.writeText(roomCode)
+    .then(() => toast(`代號 ${roomCode} 已複製`));
 };
 
-window.insertText = function(text) {
-  const editor = document.getElementById('note-editor');
-  const start = editor.selectionStart;
-  const before = editor.value.substring(0, start);
-  const after = editor.value.substring(editor.selectionEnd);
-  editor.value = before + text + after;
-  editor.selectionStart = editor.selectionEnd = start + text.length;
-  editor.dispatchEvent(new Event('input'));
-  editor.focus();
-};
-
-// ─── Config modal ─────────────────────────────────────────────────────────────
-window.showConfigModal = function() {
-  const cfg = Object.assign({}, PRESET_CFG, loadConfig() || {});
-  ['apiKey','authDomain','databaseURL','projectId'].forEach(k => {
-    const el = document.getElementById('cfg-'+k);
-    if (el) el.value = cfg[k] || '';
-  });
-  document.getElementById('config-modal').classList.add('active');
-};
-
-window.closeConfigModal = function() {
-  document.getElementById('config-modal').classList.remove('active');
-};
-
-window.saveConfig = function() {
-  const cfg = {
-    apiKey: document.getElementById('cfg-apiKey').value.trim(),
-    authDomain: document.getElementById('cfg-authDomain').value.trim(),
-    databaseURL: document.getElementById('cfg-databaseURL').value.trim(),
-    projectId: document.getElementById('cfg-projectId').value.trim(),
-  };
-  if (!cfg.apiKey || !cfg.databaseURL) {
-    showToast('請填寫 apiKey 和 databaseURL');
-    return;
-  }
-  saveConfigToStorage(cfg);
-  app = null; db = null;
-  if (initFirebase(cfg)) {
-    closeConfigModal();
-    showToast('Firebase 設定已儲存 ✓');
-    document.getElementById('error-msg').textContent = '';
-  } else {
-    showToast('設定有誤，請再確認');
-  }
-};
-
-// ─── Toast ────────────────────────────────────────────────────────────────────
-function showToast(msg) {
+function toast(msg) {
   const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2500);
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
 }
-
-window.showToast = showToast;
-
-// ─── Keyboard shortcuts ───────────────────────────────────────────────────────
-document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') {
-    document.getElementById('config-modal').classList.remove('active');
-  }
-});
-
-// Click outside modal closes it
-document.getElementById('config-modal').addEventListener('click', e => {
-  if (e.target === e.currentTarget) closeConfigModal();
-});
 </script>
 </body>
 </html>
