@@ -457,12 +457,25 @@ function tap(step, num) {
   const owner = state[step][num];
   if (owner && owner !== me) return; // taken by someone else
 
-  const newVal = (owner === me) ? 0 : me; // toggle
-  state[step][num] = newVal;
-  render();
+  // Find if I already picked a number in this row
+  const myPrev = Object.keys(state[step]).find(n => Number(n) !== num && state[step][n] === me);
 
-  const path = ref(db, `r/${room}/d/${step}/${num}`);
-  newVal ? set(path, newVal) : remove(path);
+  if (owner === me) {
+    // Clicking my own pick → deselect
+    state[step][num] = 0;
+    render();
+    remove(ref(db, `r/${room}/d/${step}/${num}`));
+  } else {
+    // Clear my previous pick in this row first
+    if (myPrev) {
+      state[step][myPrev] = 0;
+      remove(ref(db, `r/${room}/d/${step}/${myPrev}`));
+    }
+    // Set new pick
+    state[step][num] = me;
+    render();
+    set(ref(db, `r/${room}/d/${step}/${num}`), me);
+  }
 }
 
 // ── Status ────────────────────────────────────────────────────────────────────
